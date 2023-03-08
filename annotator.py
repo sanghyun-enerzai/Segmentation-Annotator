@@ -12,7 +12,7 @@ class SegmentationAnnotator(tk.Tk):
         super(SegmentationAnnotator, self).__init__()
         self.title('Segmentation Annotator')
         self.geometry('800x600+100+100')
-        
+
         # loader frame
         loader = tk.Frame(self)
         loader.pack(side='top', fill='x', expand=False)
@@ -103,6 +103,7 @@ class SegmentationAnnotator(tk.Tk):
         self.annot_loader_entry.insert(0, path)
 
     def start_annotation(self):
+        self.annot_canvas.delete('all')
         self.image_path = Path(self.image_loader_entry.get())
         self.annot_path = Path(self.annot_loader_entry.get())
 
