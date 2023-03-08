@@ -226,7 +226,7 @@ class SegmentationAnnotator(tk.Tk):
             self.annot_canvas.delete(self.canvas_lines.pop())
 
     def save_annotation(self):
-        path = filedialog.asksaveasfilename(filetypes=[('Image File', '.png')])
+        path = filedialog.asksaveasfilename(initialfile=self.annot_path.name, filetypes=[('Image File', '.png')])
         if path[-4:] != '.png':
             path += '.png'
         cv_annot_img = Image.fromarray(self.cv_annot)
