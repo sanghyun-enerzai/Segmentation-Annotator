@@ -155,9 +155,13 @@ class SegmentationAnnotator(tk.Tk):
         self.bind('<Return>', self.make_polygon)
         self.bind('<space>', self.make_polygon)
         self.bind('<Control-z>', self.remove_last_point)
+        self.bind('<Control-Z>', self.remove_last_point)
         self.bind('<Control-s>', lambda e: self.save_annotation())
+        self.bind('<Control-S>', lambda e: self.save_annotation())
         self.bind('<KeyPress-q>', self.change_to_original)
+        self.bind('<KeyPress-Q>', self.change_to_original)
         self.bind('<KeyRelease-q>', self.change_to_overlay)
+        self.bind('<KeyRelease-Q>', self.change_to_overlay)
         self.bind('<KeyPress-Left>', self.go_back_annot)
         self.bind('<KeyPress-Right>', self.go_front_annot)
         
