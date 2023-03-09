@@ -96,12 +96,22 @@ class SegmentationAnnotator(tk.Tk):
         self.canvas_lines = []
         
     def image_filedialog(self):
-        path = filedialog.askopenfilename(filetypes=[('Image File', '.jpg'), ('Image File', '.png')])
+        if self.image_path is None:
+            path = filedialog.askopenfilename(filetypes=[('Image File', '.jpg'), ('Image File', '.png')])
+        else:
+            path = filedialog.askopenfilename(initialdir=self.image_path.parent, filetypes=[('Image File', '.jpg'), ('Image File', '.png')])
+        if path == '':
+            return
         self.image_loader_entry.delete(0, tk.END)
         self.image_loader_entry.insert(0, path)
 
     def annot_filedialog(self):
-        path = filedialog.askopenfilename(filetypes=[('Image File', '.png')])
+        if self.annot_path is None:
+            path = filedialog.askopenfilename(filetypes=[('Image File', '.png')])
+        else:
+            path = filedialog.askopenfilename(initialdir=self.annot_path.parent, filetypes=[('Image File', '.png')])
+        if path == '':
+            return
         self.annot_loader_entry.delete(0, tk.END)
         self.annot_loader_entry.insert(0, path)
 
