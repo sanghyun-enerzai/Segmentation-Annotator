@@ -24,7 +24,7 @@ class SegmentationAnnotator(tk.Tk):
         image_loader_label = tk.Label(image_loader, text='Load Image File: ')
         image_loader_label.pack(side='left')
 
-        self.image_loader_entry = tk.Entry(image_loader, takefocus=0)
+        self.image_loader_entry = tk.Entry(image_loader, takefocus=0, state='readonly')
         self.image_loader_entry.pack(side='left', fill='x', expand=True)
 
         image_loader_button = tk.Button(image_loader, text='Find', command=self.image_filedialog)
@@ -37,7 +37,7 @@ class SegmentationAnnotator(tk.Tk):
         annot_loader_label = tk.Label(annot_loader, text='Load Annotation File: ')
         annot_loader_label.pack(side='left')
 
-        self.annot_loader_entry = tk.Entry(annot_loader, takefocus=0)
+        self.annot_loader_entry = tk.Entry(annot_loader, takefocus=0, state='readonly')
         self.annot_loader_entry.pack(side='left', fill='x', expand=True)
 
         annot_loader_button = tk.Button(annot_loader, text='Find', command=self.annot_filedialog)
@@ -94,6 +94,8 @@ class SegmentationAnnotator(tk.Tk):
         self.points = []
         self.canvas_points = []
         self.canvas_lines = []
+        self.created_annots = []
+        self.removed_annots = []
         
     def image_filedialog(self):
         if self.image_path is None:
@@ -102,8 +104,10 @@ class SegmentationAnnotator(tk.Tk):
             path = filedialog.askopenfilename(initialdir=self.image_path.parent, filetypes=[('Image File', '.jpg'), ('Image File', '.png')])
         if path == '':
             return
+        self.image_loader_entry.config(state='normal')
         self.image_loader_entry.delete(0, tk.END)
         self.image_loader_entry.insert(0, path)
+        self.image_loader_entry.config(state='readonly')
 
     def annot_filedialog(self):
         if self.annot_path is None:
@@ -112,8 +116,10 @@ class SegmentationAnnotator(tk.Tk):
             path = filedialog.askopenfilename(initialdir=self.annot_path.parent, filetypes=[('Image File', '.png')])
         if path == '':
             return
+        self.annot_loader_entry.config(state='normal')
         self.annot_loader_entry.delete(0, tk.END)
         self.annot_loader_entry.insert(0, path)
+        self.annot_loader_entry.config(state='readonly')
 
     def start_annotation(self):
         self.annot_canvas.delete('all')
@@ -152,6 +158,8 @@ class SegmentationAnnotator(tk.Tk):
         self.bind('<Control-s>', lambda e: self.save_annotation())
         self.bind('<KeyPress-q>', self.change_to_original)
         self.bind('<KeyRelease-q>', self.change_to_overlay)
+        self.bind('<KeyPress-Left>', self.go_back_annot)
+        self.bind('<KeyPress-Right>', self.go_front_annot)
         
         self.annot_save_button.config(state='normal')
         self.loaded = True
@@ -159,6 +167,8 @@ class SegmentationAnnotator(tk.Tk):
         self.points = []
         self.canvas_points = []
         self.canvas_lines = []
+        self.created_annots = [self.cv_annot.copy()]
+        self.removed_annots = []
 
         self.title(f'Segmentation Annotator - {self.image_path.name} | {self.annot_path.name}')
 
@@ -219,15 +229,23 @@ class SegmentationAnnotator(tk.Tk):
         cv_annot_gray = cv2.cvtColor(self.cv_annot, cv2.COLOR_BGR2GRAY)
         self.cv_overlay = self.cv_image.copy()
         self.cv_overlay[cv_annot_gray > 0, :] = (1 - self.opacity) * self.cv_image[cv_annot_gray > 0, :] + self.opacity * self.color_map[cv_annot_gray > 0, :]
-        self.annot_canvas.delete('all')
+
+        for i in range(len(self.canvas_points)):
+            self.annot_canvas.delete(self.canvas_points[i])
+        for i in range(len(self.canvas_lines)):
+            self.annot_canvas.delete(self.canvas_lines[i])
+
         self.cv_overlay = cv2.cvtColor(self.cv_overlay, cv2.COLOR_BGR2RGB)
         self.cv_overlay = Image.fromarray(self.cv_overlay)
         self.canvas_image = ImageTk.PhotoImage(image=self.cv_overlay)
-        self.canvas_image_obj = self.annot_canvas.create_image(self.canvas_xpos, self.canvas_ypos, image=self.canvas_image)
+        self.annot_canvas.itemconfig(self.canvas_image_obj, image=self.canvas_image)
 
         self.points = []
         self.canvas_points = []
         self.canvas_lines = []
+
+        self.created_annots.append(self.cv_annot.copy())
+        self.removed_annots = []
 
     def remove_last_point(self, event):
         if not self.loaded:
@@ -254,6 +272,32 @@ class SegmentationAnnotator(tk.Tk):
         if not self.loaded:
             return
         self.annot_canvas.itemconfig(self.canvas_image_obj, image=self.canvas_image)
+
+    def go_back_annot(self, event):
+        if len(self.created_annots) > 0:
+            self.cv_annot = self.created_annots.pop()
+            self.removed_annots.append(self.cv_annot.copy())
+            
+            cv_annot_gray = cv2.cvtColor(self.cv_annot, cv2.COLOR_BGR2GRAY)
+            self.cv_overlay = self.cv_image.copy()
+            self.cv_overlay[cv_annot_gray > 0, :] = (1 - self.opacity) * self.cv_image[cv_annot_gray > 0, :] + self.opacity * self.color_map[cv_annot_gray > 0, :]
+            self.cv_overlay = cv2.cvtColor(self.cv_overlay, cv2.COLOR_BGR2RGB)
+            self.cv_overlay = Image.fromarray(self.cv_overlay)
+            self.canvas_image = ImageTk.PhotoImage(image=self.cv_overlay)
+            self.annot_canvas.itemconfig(self.canvas_image_obj, image=self.canvas_image)
+
+    def go_front_annot(self, event):
+        if len(self.removed_annots) > 0:
+            self.cv_annot = self.removed_annots.pop()
+            self.created_annots.append(self.cv_annot.copy())
+
+            cv_annot_gray = cv2.cvtColor(self.cv_annot, cv2.COLOR_BGR2GRAY)
+            self.cv_overlay = self.cv_image.copy()
+            self.cv_overlay[cv_annot_gray > 0, :] = (1 - self.opacity) * self.cv_image[cv_annot_gray > 0, :] + self.opacity * self.color_map[cv_annot_gray > 0, :]
+            self.cv_overlay = cv2.cvtColor(self.cv_overlay, cv2.COLOR_BGR2RGB)
+            self.cv_overlay = Image.fromarray(self.cv_overlay)
+            self.canvas_image = ImageTk.PhotoImage(image=self.cv_overlay)
+            self.annot_canvas.itemconfig(self.canvas_image_obj, image=self.canvas_image)
 
 
 if __name__ == '__main__':
