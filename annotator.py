@@ -280,9 +280,9 @@ class SegmentationAnnotator(tk.Tk):
         self.annot_canvas.itemconfig(self.canvas_image_obj, image=self.canvas_image)
 
     def go_back_annot(self, event):
-        if len(self.created_annots) > 0:
-            self.cv_annot = self.created_annots.pop()
-            self.removed_annots.append(self.cv_annot.copy())
+        if len(self.created_annots) > 1:
+            self.removed_annots.append(self.created_annots.pop())
+            self.cv_annot = self.created_annots[-1].copy()
             
             cv_annot_gray = cv2.cvtColor(self.cv_annot, cv2.COLOR_BGR2GRAY)
             self.cv_overlay = self.cv_image.copy()
