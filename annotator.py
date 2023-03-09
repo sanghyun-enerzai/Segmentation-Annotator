@@ -52,7 +52,7 @@ class SegmentationAnnotator(tk.Tk):
         start_button.pack(side='left', fill='x', expand=True)
 
         # save annotation button
-        self.annot_save_button = tk.Button(buttons, text='Save Annotation', command=self.save_annotation, state='disabled')
+        self.annot_save_button = tk.Button(buttons, text='Save Annotation (Crtl+S)', command=self.save_annotation, state='disabled')
         self.annot_save_button.pack(side='right', fill='x', expand=True)
 
         self.image_path = None
@@ -67,10 +67,13 @@ class SegmentationAnnotator(tk.Tk):
         mode_frame.pack(side='top', fill='x', expand=True)
 
         self.is_draw = tk.IntVar(self, value=1)
-        self.mode_draw = tk.Radiobutton(mode_frame, text='Draw Label', value=1, variable=self.is_draw)
+        self.mode_draw = tk.Radiobutton(mode_frame, text='Draw Label (1)', value=1, variable=self.is_draw)
         self.mode_draw.pack(side='left', fill='x', expand=True)
-        self.mode_erase = tk.Radiobutton(mode_frame, text='Erase Label', value=2, variable=self.is_draw)
+        self.mode_erase = tk.Radiobutton(mode_frame, text='Erase Label (2)', value=2, variable=self.is_draw)
         self.mode_erase.pack(side='right', fill='x', expand=True)
+
+        self.bind('1', lambda e: self.mode_draw.select())
+        self.bind('2', lambda e: self.mode_erase.select())
 
         # annotator
         annotation = tk.Frame(self)
