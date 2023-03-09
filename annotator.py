@@ -202,8 +202,14 @@ class SegmentationAnnotator(tk.Tk):
         img_y = self.h // 2 - self.canvas_ypos + y
 
         # check invalid point
-        if img_x < 0 or img_x >= self.w or img_y < 0 or img_y >= self.h:
+        margin = 50
+        if img_x < -margin or img_x >= self.w + margin or img_y < -margin or img_y >= self.h + margin:
             return
+        
+        img_x = min(max(0, img_x), self.w - 1)
+        img_y = min(max(0, img_y), self.h - 1)
+        x = img_x + self.canvas_xpos - self.w // 2
+        y = img_y + self.canvas_ypos - self.h // 2
 
         pt = self.annot_canvas.create_polygon(x-1, y-1, x+1, y-1, x-1, y+1, x+1, y+1, fill='red', outline='red', width=1)
         self.canvas_points.append(pt)
