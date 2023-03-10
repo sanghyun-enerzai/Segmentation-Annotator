@@ -3,7 +3,6 @@ import tkinter as tk
 import tkinter.messagebox as messagebox
 import numpy as np
 
-from tkinter import ttk
 from pathlib import Path
 from tkinter import filedialog
 from PIL import Image, ImageTk
