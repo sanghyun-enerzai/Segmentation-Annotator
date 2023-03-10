@@ -47,23 +47,6 @@ class SegmentationAnnotator(tk.Tk):
         self.image_loader_listbox.config(yscrollcommand=image_loader_scroll.set)
         image_loader_scroll.config(command=self.image_loader_listbox.yview)
 
-        annot_selector = tk.Frame(tool)
-        annot_selector.pack(side='top', fill='x')
-
-        annot_selector_left = tk.Button(annot_selector, text='(Page Up) <--', command=self.go_prev_image)
-        annot_selector_left.pack(side='left')
-        self.bind('<Prior>', lambda e: self.go_prev_image())
-
-        self.annot_selector_filename_label = tk.Label(annot_selector, text='')
-        self.annot_selector_filename_label.pack(side='left', fill='x', expand=True)
-
-        self.annot_selector_number_label = tk.Label(annot_selector, text='(0/0)')
-        self.annot_selector_number_label.pack(side='left', fill='x', expand=True)
-
-        annot_selector_right = tk.Button(annot_selector, text='--> (Page Down)', command=self.go_next_image)
-        annot_selector_right.pack(side='right')
-        self.bind('<Next>', lambda e: self.go_next_image())
-
         # annotation loader
         annot_loader = tk.Frame(loader)
         annot_loader.pack(side='left', fill='x', expand=True)
@@ -73,6 +56,16 @@ class SegmentationAnnotator(tk.Tk):
 
         annot_loader_label = tk.Label(annot_finder, text='Annotation Files')
         annot_loader_label.pack(side='left', fill='x', expand=True)
+
+        annot_loader_scratch = tk.Frame(annot_finder)
+        annot_loader_scratch.pack(side='left')
+
+        annot_loader_scratch_label = tk.Label(annot_loader_scratch, text='From scratch')
+        annot_loader_scratch_label.pack(side='left')
+
+        self.from_scratch = tk.IntVar(self, value=0)
+        annot_loader_scratch_button = tk.Checkbutton(annot_loader_scratch, variable=self.from_scratch)
+        annot_loader_scratch_button.pack(side='right')
 
         annot_loader_button = tk.Button(annot_finder, text='Find', command=self.annot_filedialog)
         annot_loader_button.pack(side='right')
@@ -93,6 +86,24 @@ class SegmentationAnnotator(tk.Tk):
         # start annotation button
         start_button = tk.Button(loader, text='Start Annotation', command=self.start_annotation)
         start_button.pack(side='right', fill='y')
+
+        # annotation selector
+        annot_selector = tk.Frame(tool)
+        annot_selector.pack(side='top', fill='x')
+
+        annot_selector_left = tk.Button(annot_selector, text='(Page Up) <--', command=self.go_prev_image)
+        annot_selector_left.pack(side='left')
+        self.bind('<Prior>', lambda e: self.go_prev_image())
+
+        self.annot_selector_filename_label = tk.Label(annot_selector, text='')
+        self.annot_selector_filename_label.pack(side='left', fill='x', expand=True)
+
+        self.annot_selector_number_label = tk.Label(annot_selector, text='(0/0)')
+        self.annot_selector_number_label.pack(side='left', fill='x', expand=True)
+
+        annot_selector_right = tk.Button(annot_selector, text='--> (Page Down)', command=self.go_next_image)
+        annot_selector_right.pack(side='right')
+        self.bind('<Next>', lambda e: self.go_next_image())
 
         self.image_paths = []
         self.annot_paths = []
@@ -121,6 +132,7 @@ class SegmentationAnnotator(tk.Tk):
         self.annot_canvas.pack(side='bottom', fill='both', expand=True)
 
         # variables
+        self.scratch = False
         self.color = (132, 12, 234)
         self.color_map = None
         self.opacity = 0.4
@@ -163,17 +175,19 @@ class SegmentationAnnotator(tk.Tk):
             self.annot_loader_listbox.insert(i, self.annot_paths[i].parent.name + '/' + self.annot_paths[i].name)
 
     def start_annotation(self):
-        if len(self.image_paths) != len(self.annot_paths):
+        self.scratch = self.from_scratch.get() == 1
+        if (not self.scratch) and len(self.image_paths) != len(self.annot_paths):
             messagebox.showerror('Error', 'Number of Image Files != Number of Annotation Files')
             return
         
         valid_flag = True
-        for i in range(len(self.image_paths)):
-            image_name = self.image_paths[i].name
-            annot_name = self.annot_paths[i].name
-            if image_name[:-4] != annot_name[:-4]:
-                valid_flag = False
-            break
+        if not self.scratch:
+            for i in range(len(self.image_paths)):
+                image_name = self.image_paths[i].name
+                annot_name = self.annot_paths[i].name
+                if image_name[:-4] != annot_name[:-4]:
+                    valid_flag = False
+                break
         if not valid_flag:
             messagebox.showerror('Error', 'Name of Image File != Name of Annotation File')
             return
@@ -187,7 +201,13 @@ class SegmentationAnnotator(tk.Tk):
         
         self.loaded = True
         self.current = 0
-        self.cv_annots = [np.ascontiguousarray(np.array(Image.open(str(annot_path)).convert('RGB'))[:, :, ::-1], dtype=np.uint8) for annot_path in self.annot_paths]
+        if not self.scratch:
+            self.cv_annots = [np.ascontiguousarray(np.array(Image.open(str(annot_path)).convert('RGB'))[:, :, ::-1], dtype=np.uint8) for annot_path in self.annot_paths]
+        else:
+            self.cv_annots = []
+            for i in range(self.total):
+                w, h = Image.open(str(self.image_paths[self.current])).size
+                self.cv_annots.append(np.zeros((h, w, 3), dtype=np.uint8))
         self.load_new_image()
 
         self.annot_canvas.bind('<Button3-Motion>', self.move_canvas)
@@ -211,7 +231,7 @@ class SegmentationAnnotator(tk.Tk):
         self.annot_canvas.delete('all')
         self.annot_selector_filename_label.config(text=f'{self.image_paths[self.current].name}')
         self.annot_selector_number_label.config(text=f'{self.current + 1}/{self.total}')
-        self.title(f'Segmentation Annotator - {self.annot_paths[self.current].name}')
+        self.title(f'Segmentation Annotator - {self.image_paths[self.current].name}')
         
         self.cv_image = np.array(Image.open(str(self.image_paths[self.current])).convert('RGB'))[:, :, ::-1]
         cv_annot_gray = cv2.cvtColor(self.cv_annots[self.current], cv2.COLOR_BGR2GRAY)
@@ -330,10 +350,13 @@ class SegmentationAnnotator(tk.Tk):
             self.annot_canvas.delete(self.canvas_lines.pop())
 
     def save_annotation(self):
-        path = Path(filedialog.askdirectory(initialdir=self.annot_paths[0].parent, mustexist=True))
+        if not self.scratch:
+            path = Path(filedialog.askdirectory(initialdir=self.annot_paths[0].parent, mustexist=True))
+        else:
+            path = Path(filedialog.askdirectory(initialdir=self.image_paths[0].parent, mustexist=True))
         for i in range(self.total):
             cv_annot_img = Image.fromarray(self.cv_annots[i])
-            cv_annot_img.save(path / self.annot_paths[i].name)
+            cv_annot_img.save(path / (self.image_paths[i].name[:-3] + 'png'))
 
     def change_to_original(self, event):
         if not self.loaded:

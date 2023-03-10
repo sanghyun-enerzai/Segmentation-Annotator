@@ -13,3 +13,4 @@
 - Ctrl + S : 작업 중인 mask 파일 저장
 - Crtl + Z : 마지막으로 찍은 point 취소
 - ←, → : 마지막으로 그린 Polygon 없애기 & 다시 실행
+- Page Up, Page Down : 이미지 번호 이동
