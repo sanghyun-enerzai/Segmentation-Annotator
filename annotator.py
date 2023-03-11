@@ -206,7 +206,7 @@ class SegmentationAnnotator(tk.Tk):
         else:
             self.cv_annots = []
             for i in range(self.total):
-                w, h = Image.open(str(self.image_paths[self.current])).size
+                w, h = Image.open(str(self.image_paths[i])).size
                 self.cv_annots.append(np.zeros((h, w, 3), dtype=np.uint8))
         self.load_new_image()
 
