@@ -6,6 +6,7 @@
 - 좌클릭 : Polygon mask의 point 찍기
 
 ### 키보드
+- Ctrl + Q : 작업 시작
 - SpaceBar, Enter : 찍어놓은 point들로 polygon 완성시키기
 - q : Overlay 전의 이미지 확인
 - 1 : Draw mode (Polygon이 mask가 됨)

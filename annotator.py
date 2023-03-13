@@ -84,8 +84,10 @@ class SegmentationAnnotator(tk.Tk):
         annot_loader_scroll.config(command=self.annot_loader_listbox.yview)
 
         # start annotation button
-        start_button = tk.Button(loader, text='Start Annotation', command=self.start_annotation)
+        start_button = tk.Button(loader, text='Start Annotation\n(Ctrl+Q)', command=self.start_annotation)
         start_button.pack(side='right', fill='y')
+        self.bind('<Control-q>', lambda e: self.start_annotation())
+        self.bind('<Control-Q>', lambda e: self.start_annotation())
 
         # annotation selector
         annot_selector = tk.Frame(tool)
