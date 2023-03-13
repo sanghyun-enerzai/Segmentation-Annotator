@@ -31,13 +31,13 @@ class SegmentationAnnotator(tk.Tk):
         image_loader_label = tk.Label(image_finder, text='Image Files')
         image_loader_label.pack(side='left', fill='x', expand=True)
 
-        image_loader_button = tk.Button(image_finder, text='Find', command=self.image_filedialog)
+        image_loader_button = tk.Button(image_finder, text='Find', command=self.image_filedialog, takefocus=False)
         image_loader_button.pack(side='right')
 
         image_list = tk.Frame(image_loader)
         image_list.pack(side='top', fill='x', expand=True)
 
-        self.image_loader_listbox = tk.Listbox(image_list, selectmode='extended', height=6)
+        self.image_loader_listbox = tk.Listbox(image_list, selectmode='extended', height=6, takefocus=False)
         self.image_loader_listbox.pack(side='left', fill='x', expand=True)
         self.image_loader_listbox.bind('<Delete>', self.delete_image_from_loader)
 
@@ -64,16 +64,16 @@ class SegmentationAnnotator(tk.Tk):
         annot_loader_scratch_label.pack(side='left')
 
         self.from_scratch = tk.IntVar(self, value=0)
-        annot_loader_scratch_button = tk.Checkbutton(annot_loader_scratch, variable=self.from_scratch)
+        annot_loader_scratch_button = tk.Checkbutton(annot_loader_scratch, variable=self.from_scratch, takefocus=False)
         annot_loader_scratch_button.pack(side='right')
 
-        annot_loader_button = tk.Button(annot_finder, text='Find', command=self.annot_filedialog)
+        annot_loader_button = tk.Button(annot_finder, text='Find', command=self.annot_filedialog, takefocus=False)
         annot_loader_button.pack(side='right')
 
         annot_list = tk.Frame(annot_loader)
         annot_list.pack(side='top', fill='x', expand=True)
 
-        self.annot_loader_listbox = tk.Listbox(annot_list, selectmode='extended', height=6)
+        self.annot_loader_listbox = tk.Listbox(annot_list, selectmode='extended', height=6, takefocus=False)
         self.annot_loader_listbox.pack(side='left', fill='x', expand=True)
         self.annot_loader_listbox.bind('<Delete>', self.delete_annot_from_loader)
 
@@ -84,7 +84,7 @@ class SegmentationAnnotator(tk.Tk):
         annot_loader_scroll.config(command=self.annot_loader_listbox.yview)
 
         # start annotation button
-        start_button = tk.Button(loader, text='Start Annotation\n(Ctrl+Q)', command=self.start_annotation)
+        start_button = tk.Button(loader, text='Start Annotation\n(Ctrl+Q)', command=self.start_annotation, takefocus=False)
         start_button.pack(side='right', fill='y')
         self.bind('<Control-q>', lambda e: self.start_annotation())
         self.bind('<Control-Q>', lambda e: self.start_annotation())
@@ -93,7 +93,7 @@ class SegmentationAnnotator(tk.Tk):
         annot_selector = tk.Frame(tool)
         annot_selector.pack(side='top', fill='x')
 
-        annot_selector_left = tk.Button(annot_selector, text='(Page Up) <--', command=self.go_prev_image)
+        annot_selector_left = tk.Button(annot_selector, text='(Page Up) <--', command=self.go_prev_image, takefocus=False)
         annot_selector_left.pack(side='left')
         self.bind('<Prior>', lambda e: self.go_prev_image())
 
@@ -103,7 +103,7 @@ class SegmentationAnnotator(tk.Tk):
         self.annot_selector_number_label = tk.Label(annot_selector, text='(0/0)')
         self.annot_selector_number_label.pack(side='left', fill='x', expand=True)
 
-        annot_selector_right = tk.Button(annot_selector, text='--> (Page Down)', command=self.go_next_image)
+        annot_selector_right = tk.Button(annot_selector, text='--> (Page Down)', command=self.go_next_image, takefocus=False)
         annot_selector_right.pack(side='right')
         self.bind('<Next>', lambda e: self.go_next_image())
 
@@ -119,9 +119,9 @@ class SegmentationAnnotator(tk.Tk):
         mode_frame.pack(side='top', fill='x')
 
         self.is_draw = tk.IntVar(self, value=1)
-        self.mode_draw = tk.Radiobutton(mode_frame, text='Draw Label (1)', value=1, variable=self.is_draw)
+        self.mode_draw = tk.Radiobutton(mode_frame, text='Draw Label (1)', value=1, variable=self.is_draw, takefocus=False)
         self.mode_draw.pack(side='left', fill='x', expand=True)
-        self.mode_erase = tk.Radiobutton(mode_frame, text='Erase Label (2)', value=2, variable=self.is_draw)
+        self.mode_erase = tk.Radiobutton(mode_frame, text='Erase Label (2)', value=2, variable=self.is_draw, takefocus=False)
         self.mode_erase.pack(side='right', fill='x', expand=True)
 
         self.bind('1', lambda e: self.mode_draw.select())
