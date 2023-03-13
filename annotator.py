@@ -196,12 +196,6 @@ class SegmentationAnnotator(tk.Tk):
 
         self.total = len(self.image_paths)
         self.annot_canvas.delete('all')
-        if self.total == 0:
-            self.current = 0
-            self.annot_selector_filename_label.config(text='')
-            self.annot_selector_number_label.config(text=f'0/0')
-            return
-        
         self.loaded = True
         self.current = 0
         self.points = []
@@ -209,6 +203,13 @@ class SegmentationAnnotator(tk.Tk):
         self.canvas_lines = []
         self.created_annots = []
         self.removed_annots = []
+        self.h, self.w = 0, 0
+        if self.total == 0:
+            self.current = 0
+            self.annot_selector_filename_label.config(text='')
+            self.annot_selector_number_label.config(text=f'0/0')
+            return
+        
         if not self.scratch:
             self.cv_annots = [np.ascontiguousarray(np.array(Image.open(str(annot_path)).convert('RGB'))[:, :, ::-1], dtype=np.uint8) for annot_path in self.annot_paths]
         else:
